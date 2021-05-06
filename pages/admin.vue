@@ -18,14 +18,14 @@
                         <td>{{ book.author }}</td>
                         <td>
                             <v-btn v-if="book.availability" depressed color="primary" v-on:click="changeBookAvailability(book.id)">
-                                Добавить
+                                Доступна
                             </v-btn>
                             <v-btn v-else depressed color="primary" v-on:click="changeBookAvailability(book.id)">
-                                Добавить
+                                Выдана
                             </v-btn>
                         </td>
                         <td>
-                            <v-btn depressed color="error" v-on:click="addBook">
+                            <v-btn depressed color="error" v-on:click="deleteBook(book.id)">
                                 Удалить
                             </v-btn>
                         </td>
@@ -51,17 +51,45 @@
 
 <script>
 export default {
-    async asyncData({ $axios }){
-                const list = await $axios.$get('http://127.0.0.1:8000/public/api/book/all');
-                console.log(list.data)
-                this.books = list.data
-        },
-    data: {
+    data() {
+        return {
             title: '',
             author: '',
             id: null,
             books: [],
-        },
+        }
+    },
+    methods: {
+                loadBookList(){
+                    this.$axios.get('http://localhost:8000/api/book/all')
+                        .then(res => {
+                            console.log(res.data)
+                            this.books = res.data
+                    })
+                },
+                addBook(){
+                    this.$axios.post('http://localhost:8000/api/book/add', {
+                        title: this.title,
+                        author: this.author
+                    })
+                    .then((response) => {
+                        console.log(response);
+                        this.loadBookList();
+                    })
+                },
+                deleteBook(id){
+                    this.$axios.get('http://localhost:8000/api/book/delete/' + id)
+                        .then(res => {
+                            this.loadBookList();
+                    })
+                },
+                changeBookAvailability(id){
+                    this.$axios.get('http://localhost:8000/api/book/change_availabilty/' + id)
+                        .then(res => {
+                            this.loadBookList();
+                    })
+                }
+            },
     mounted(){
          // Сразу после загрузки страницы подгружаем список книг и отображаем его
             this.loadBookList();
